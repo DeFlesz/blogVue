@@ -1,0 +1,5 @@
+@import './base.css';
+
+.object-container {
+    overflow: scroll
+}
