@@ -2,6 +2,7 @@ import NotFound from "@/views/NotFound.vue";
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
 import Articles from "@/views/Articles.vue";
+import MyArticles from "@/views/MyArticles.vue";
 import ArticleView from "@/views/ArticleView.vue";
 import EditArticle from "@/views/EditArticle.vue";
 import NewArticle from "@/views/NewArticle.vue";
@@ -14,6 +15,7 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
     { path: '/:pathMatch(.*)*', name: 'notFound', component: NotFound},
     { path: '/', name: 'home', component: Articles},
+    { path: '/my-articles', name: 'myArticles', component: MyArticles},
     { path: '/article/:id', name: 'articleView', component: ArticleView},
     { path: '/edit-article/:article_id', name: 'editArticle', component: EditArticle},
     { path: '/new-article', name: 'newArticle', component: NewArticle},

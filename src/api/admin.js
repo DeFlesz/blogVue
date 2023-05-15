@@ -1,13 +1,13 @@
 import { useUserStore } from "@/stores/user";
 
-export async function getUsers() {
+export async function getUsers(page = 1) {
     const user = useUserStore()
 
     if (!user.isAdmin) {
         return;
     }
 
-    return fetch("http://localhost:8000/admin/users",
+    return fetch(`http://localhost:8000/admin/users?page=${page}`,
     {
         method: "GET",
         headers: {

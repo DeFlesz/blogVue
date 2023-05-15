@@ -1,10 +1,10 @@
 import { useUserStore } from "@/stores/user";
 
-export async function getCommentsForArticle(user_id, article_id) {
+export async function getCommentsForArticle(user_id, article_id, page = 1) {
   const user = useUserStore();
 
   return fetch(
-    `http://localhost:8000/admin/users/${user_id}/articles/${article_id}/comments`,
+    `http://localhost:8000/admin/users/${user_id}/articles/${article_id}/comments?page=${page}`,
     {
       method: "GET",
       headers: {

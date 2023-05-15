@@ -18,24 +18,19 @@ const state = reactive({
   current_page: 1,
 });
 
+if (!isAuthorized()) {
+  router.push("/");
+}
+
 function readData() {
   if (route.query.page) {
     state.current_page = route.query.page;
   }
 
-  getArticles(state.current_page).then((data) => {
-    // console.log(data);
-
+  const user_id = getUserID();
+  getArticlesForUser(user_id, state.current_page).then((data) => {
     state.articles = data.articles;
-    // state.userArticles = [];
     state.pages_count = data.pages_count;
-    // data.articles.forEach((element) => {
-    //   if (element.user_id == user_id) {
-    //     state.userArticles.push(element);
-    //     return;
-    //   }
-    //   state.articles.push(element);
-    // });
   });
 }
 
@@ -47,7 +42,7 @@ readData();
     <div class="d-flex justify-content-between flex-fill">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item active">Articles</li>
+          <li class="breadcrumb-item active">Your articles</li>
         </ol>
       </nav>
       <!-- <span>{{ state.articles.length }} articles</span> -->
@@ -75,14 +70,6 @@ readData();
         v-if="isAuthorized()"
       >
         New Article
-      </router-link>
-
-      <router-link
-        to="/my-articles"
-        class="btn btn-success ms-2"
-        v-if="isAuthorized()"
-      >
-        My Articles
       </router-link>
 
       <PageComponent

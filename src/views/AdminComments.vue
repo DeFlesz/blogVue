@@ -1,19 +1,27 @@
 <script setup>
 import { reactive } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import Comment from "@/components/Comment.vue";
 import { getCommentsForArticle } from "@/api/comments";
 import { isAdmin, getUserData } from "../api/auth";
 import { getArticle } from "../api/articles";
+import PageComponent from "../components/PageComponent.vue";
 
+const route = useRoute();
 const router = useRouter();
 
 if (!isAdmin()) {
   router.push("/");
 }
 
-const state = reactive({ comments: [], username: String, title: String });
+const state = reactive({
+  comments: [],
+  username: String,
+  title: String,
+  pages_count: 0,
+  current_page: 1,
+});
 
 const user_id = router.currentRoute.value.params.user_id;
 const article_id = router.currentRoute.value.params.article_id;
@@ -27,9 +35,15 @@ getArticle(article_id).then((data) => {
 });
 
 function readData() {
-  getCommentsForArticle(user_id, article_id).then((data) => {
-    state.comments = data;
-  });
+  if (route.query.page) {
+    state.current_page = route.query.page;
+  }
+  getCommentsForArticle(user_id, article_id, state.current_page).then(
+    (data) => {
+      state.comments = data.comments;
+      state.pages_count = data.pages_count;
+    }
+  );
 }
 readData();
 </script>
@@ -58,6 +72,11 @@ readData();
         @deleted="readData()"
       />
     </div>
+    <PageComponent
+      :pages_count="state.pages_count"
+      :current_page="state.current_page"
+      @update="readData()"
+    />
   </div>
 </template>
 

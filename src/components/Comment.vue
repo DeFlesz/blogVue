@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from "vue";
+import { onMounted, onUpdated, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthorized, isOwner, isAdmin } from "@/api/auth";
 import { deleteComment } from "@/api/comments";
@@ -10,36 +10,72 @@ const props = defineProps({
 });
 
 const authorized = isAuthorized();
-const state = reactive({ username: "" });
+const expanded = ref(true);
+const element = ref(null);
+const expandButton = ref(true);
 
-fetch("http://127.0.0.1:8000/admin/users/" + props.comment.user_id)
-  .then((response) => {
-    return response.json();
-  })
-  .then((data) => {
-    // console.log(data);
-    state.username = data.displayname;
-  });
+function expand() {
+  expanded.value = !expanded.value;
+  // console.log(element.value.clientHeight);
+  // element.value.focus();
+}
+
+// watch(element, async (oldHeight, newHeight) => {
+//   console.log(oldHeight, newHeight);
+// });
+
+onMounted(() => {
+  if (element.value.clientHeight < 200) {
+    expandButton.value = false;
+  }
+
+  expanded.value = false;
+});
 </script>
 
 <template>
-  <div class="card mb-2">
+  <div
+    ref="element"
+    class="card mb-2 comment"
+    :class="expanded ? 'expanded' : ''"
+  >
     <div class="card-body">
-      <h5 class="card-title">@{{ state.username }}</h5>
-      <div class="card-text mb-2">{{ props.comment.body }}</div>
-
-      <div v-if="authorized && (isOwner(props.comment.user_id) || isAdmin())">
+      <div class="d-flex mb-2">
+        <h5 class="card-title me-auto">@{{ comment.username }}</h5>
+        <div v-if="authorized && (isOwner(comment.user_id) || isAdmin())">
+          <button
+            @click="
+              deleteComment(comment.id, comment.article_id).then(() =>
+                $emit('deleted')
+              )
+            "
+            class="btn btn-danger btn-sm"
+          >
+            Destroy comment
+          </button>
+        </div>
         <button
-          @click="
-            deleteComment(props.comment.id, props.comment.article_id).then(() =>
-              $emit('deleted')
-            )
-          "
-          class="btn btn-danger"
+          v-if="expandButton"
+          @click="expand()"
+          class="btn btn-warning btn-sm ms-2"
         >
-          Destroy comment
+          <template v-if="expanded">retract</template>
+          <template v-else>expand</template>
         </button>
       </div>
+      <div class="card-text mb-2">{{ comment.body }}</div>
     </div>
   </div>
 </template>
+
+<style>
+.comment {
+  max-height: 9.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expanded {
+  max-height: fit-content !important;
+}
+</style>

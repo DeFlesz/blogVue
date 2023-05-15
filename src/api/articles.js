@@ -1,17 +1,17 @@
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
 
-export async function getAllArticles() {
-    return fetch("http://localhost:8000")
+export async function getArticles(page = 1) {
+    return fetch(`http://localhost:8000?page=${page}`)
     .then((response) => {
       return response.json();
     })
 }
 
-export async function getArticlesForUser(user_id) {
+export async function getArticlesForUser(user_id, page = 1) {
   const user = useUserStore();
 
-  return fetch(`http://localhost:8000/admin/users/${user_id}/articles`, {
+  return fetch(`http://localhost:8000/admin/users/${user_id}/articles?page=${page}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -38,10 +38,7 @@ export async function getArticle(id) {
     newData.body = articleData.body;
     newData.status = articleData.status
 
-    const userResponse = await fetch("http://127.0.0.1:8000/admin/users/" + articleData.user_id);
-    const userData = await userResponse.json();
-    // console.log(data);
-    newData.username = userData.displayname;
+    newData.username = articleData.username;
     return newData;
 }
 

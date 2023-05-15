@@ -1,23 +1,29 @@
 <script setup>
 import { reactive } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { isAdmin, getUserID } from "@/api/auth";
 import { getUsers } from "@/api/admin";
 import UserElement from "@/components/UserElement.vue";
+import PageComponent from "@/components/PageComponent.vue";
 
 const router = useRouter();
-const state = reactive({ users: null });
+const route = useRoute();
+const state = reactive({ users: null, pages_count: 0, current_page: 1 });
 
 if (!isAdmin()) {
   router.push("/");
 }
 
 function readData() {
-  getUsers().then((data) => {
+  if (route.query.page) {
+    state.current_page = route.query.page;
+  }
+  getUsers(state.current_page).then((data) => {
     state.users = [];
+    state.pages_count = data.pages_count;
     // console.log(data);
     const userID = getUserID();
-    data.forEach((user) => {
+    data.users.forEach((user) => {
       if (user.id == userID) {
         return;
       }
@@ -49,7 +55,7 @@ readData();
         :user="user"
       />
     </ul>
-    <div class="mb-2">
+    <div class="d-flex align-items-start justify-content-end">
       <router-link class="btn btn-primary" to="/admin/articles"
         >All articles</router-link
       >
@@ -58,8 +64,15 @@ readData();
         :to="`/admin/${getUserID()}/articles`"
         >My articles</router-link
       >
+
+      <PageComponent
+        class="ms-auto"
+        :pages_count="state.pages_count"
+        :current_page="state.current_page"
+        @update="readData()"
+      />
     </div>
-    <router-link to="/">back to main page</router-link>
+    <!-- <router-link to="/">back to main page</router-link> -->
   </div>
 </template>
 

@@ -1,19 +1,26 @@
 <script setup>
 import { reactive } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import AdminArticleItem from "@/components/AdminArticleItem.vue";
+import PageComponent from "@/components/PageComponent.vue";
 
 import { isAdmin, getUserData } from "@/api/auth";
-import { getAllArticles, getArticlesForUser } from "@/api/articles";
+import { getArticles, getArticlesForUser } from "@/api/articles";
 
 const router = useRouter();
+const route = useRoute();
 
 if (!isAdmin()) {
   router.push("/");
 }
 
-const state = reactive({ articles: [], username: String });
+const state = reactive({
+  articles: [],
+  username: String,
+  pages_count: 0,
+  current_page: 1,
+});
 
 let user_id = -1;
 
@@ -25,14 +32,20 @@ if (router.currentRoute.value.params.user_id) {
 }
 
 function readData() {
+  if (route.query.page) {
+    state.current_page = route.query.page;
+  }
+
   if (user_id < 1) {
-    getAllArticles().then((data) => {
+    getArticles(state.current_page).then((data) => {
       // console.log(data);
-      state.articles = data;
+      state.articles = data.articles;
+      state.pages_count = data.pages_count;
     });
   } else {
-    getArticlesForUser(user_id).then((data) => {
-      state.articles = data;
+    getArticlesForUser(user_id, state.current_page).then((data) => {
+      state.articles = data.articles;
+      state.pages_count = data.pages_count;
     });
   }
 }
@@ -61,6 +74,13 @@ readData();
         @destroyed="readData()"
       />
     </ul>
+
+    <PageComponent
+      class="me-auto"
+      :pages_count="state.pages_count"
+      :current_page="state.current_page"
+      @update="readData()"
+    />
   </div>
 </template>
 <style scoped>

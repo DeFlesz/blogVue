@@ -1,14 +1,15 @@
 <script setup>
 import Comment from "@/components/Comment.vue";
-import { useRouter } from "vue-router";
+import PageComponent from "@/components/PageComponent.vue";
+import { useRouter, useRoute } from "vue-router";
 import { isAuthorized, isAdmin, isOwner } from "@/api/auth";
 import { deleteArticle } from "@/api/articles";
-import { postComment } from "../api/comments";
+import { postComment, getCommentsForArticle } from "../api/comments";
 // import { useUserStore } from "@/stores/user";
 import { reactive, ref } from "vue";
-import { getUserData } from "../api/auth";
 
 const router = useRouter();
+const route = useRoute();
 const authorized = isAuthorized();
 
 const body = ref("");
@@ -21,7 +22,28 @@ const state = reactive({
   title: "",
   body: "",
   comments: [],
+  pages_count: 0,
+  current_page: 1,
 });
+
+function readComments() {
+  if (route.query.page) {
+    state.current_page = route.query.page;
+  }
+  // console.log(state.current_page);
+  getCommentsForArticle(
+    state.user_id,
+    route.params.id,
+    state.current_page
+  ).then((data) => {
+    // console.log(data);
+    state.comments = data.comments;
+    state.pages_count = data.pages_count;
+    // data.forEach((element) => {
+    //   state.articles.push(element);
+    // });
+  });
+}
 
 fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
   .then((response) => {
@@ -36,35 +58,13 @@ fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
     state.user_id = data.user_id;
     state.title = data.title;
     state.body = data.body;
-
-    getUserData(data.user_id).then((data) => {
-      // console.log(data);
-      state.username = data.displayname;
-    });
-    // data.forEach((element) => {
-    //   state.articles.push(element);
-    // });
+    state.username = data.username;
+  })
+  .then(() => {
+    readComments();
   });
 
-function readComments() {
-  fetch(
-    "http://localhost:8000/articles/" +
-      router.currentRoute.value.params.id +
-      "/comments"
-  )
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      // console.log(data);
-      state.comments = data;
-      // data.forEach((element) => {
-      //   state.articles.push(element);
-      // });
-    });
-}
-
-readComments();
+// readComments();
 </script>
 
 <template>
@@ -80,30 +80,28 @@ readComments();
       </ol>
     </nav>
 
-    <div id="article" class="object-container pe-2 mb-3">
+    <div class="object-container pe-2 mb-3">
       <p class="card-text">{{ state.body }}</p>
-    </div>
 
-    <div v-if="authorized && (isOwner(state.user_id) || isAdmin())">
-      <button
-        @click="
-          deleteArticle(router.currentRoute.value.params.id).then(() =>
-            router.push('/')
-          )
-        "
-        class="btn btn-danger"
-      >
-        Destroy Article
-      </button>
-      <router-link
-        :to="`/edit-article/${router.currentRoute.value.params.id}`"
-        class="btn btn-primary ms-3"
-        >Edit Article</router-link
-      >
-    </div>
+      <div v-if="authorized && (isOwner(state.user_id) || isAdmin())">
+        <button
+          @click="
+            deleteArticle(router.currentRoute.value.params.id).then(() =>
+              router.push('/')
+            )
+          "
+          class="btn btn-danger"
+        >
+          Destroy Article
+        </button>
+        <router-link
+          :to="`/edit-article/${router.currentRoute.value.params.id}`"
+          class="btn btn-primary ms-3"
+          >Edit Article</router-link
+        >
+      </div>
 
-    <hr />
-    <div id="rest" class="object-container pe-2">
+      <hr />
       <h4>Leave a comment</h4>
       <div v-if="authorized">
         <form>
@@ -153,8 +151,14 @@ readComments();
       </div>
       <hr />
       <div>
+        <PageComponent
+          :pages_count="state.pages_count"
+          :current_page="state.current_page"
+          @update="readComments()"
+        />
         <template v-if="state.comments.length < 1"> No comments... </template>
         <Comment
+          :key="comment.id"
           v-for="comment in state.comments"
           :comment="comment"
           @deleted="readComments()"
@@ -165,16 +169,9 @@ readComments();
 </template>
 
 <style scoped>
-#article {
-  height: 50vh;
-}
-
-#rest {
-  height: 30vh;
-}
-
 #content {
-  overflow: hidden;
-  max-height: 95vh;
+  display: flex;
+  flex-flow: column nowrap;
+  max-height: 88vh;
 }
 </style>

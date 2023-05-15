@@ -2,7 +2,15 @@ import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
 
 export async function getUserData(user_id) {
-  return fetch(`http://127.0.0.1:8000/admin/users/${user_id}`)
+  const user = useUserStore();
+
+  return fetch(`http://127.0.0.1:8000/admin/users/${user_id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-USER-EMAIL": user.email,
+      "X-USER-TOKEN": user.token,
+    }})
   .then((response) => {
     return response.json();
   })

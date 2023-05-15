@@ -4,42 +4,38 @@ import { RouterLink } from "vue-router";
 
 import { deleteArticle } from "@/api/articles";
 import { editArticle } from "../api/articles";
+import { deleteComment } from "../api/comments";
+
+const emit = defineEmits(["destroyed"]);
 
 const props = defineProps({
   article: null,
   //   user: null,
 });
 
-const state = reactive({ displayname: String });
-
-fetch("http://127.0.0.1:8000/admin/users/" + props.article.user_id)
-  .then((response) => {
-    return response.json();
-  })
-  .then((data) => {
-    // console.log(data);
-    state.username = data.displayname;
+function removeComment() {
+  deleteArticle(props.article.id).then(() => {
+    emit("destroyed");
   });
+}
 </script>
 
 <template>
-  <router-link
+  <!-- <router-link
     id="rlink"
     :to="`/article/${props.article.id}`"
     class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+  > -->
+  <div
+    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+    id="rlink"
   >
     <div id="item" class="ms-2 me-auto align-self-start">
       <div class="mb-2">
-        @{{ state.username }} -
+        @{{ article.username }} -
         <span class="fw-bold">{{ article.title }}</span>
       </div>
-      <button
-        @click="
-          deleteArticle(article.id);
-          $emit('destroyed');
-        "
-        class="btn btn-danger btn-sm"
-      >
+      <button @click="removeComment()" class="btn btn-danger btn-sm">
         Destroy Article
       </button>
       <router-link
@@ -53,8 +49,14 @@ fetch("http://127.0.0.1:8000/admin/users/" + props.article.user_id)
         class="btn btn-warning ms-2 btn-sm"
         >Comments</router-link
       >
+      <router-link
+        class="btn btn-secondary ms-2 btn-sm"
+        :to="`/article/${props.article.id}`"
+        >Go to</router-link
+      >
     </div>
-  </router-link>
+  </div>
+  <!-- </router-link> -->
 </template>
 
 <style scoped>

@@ -1,5 +1,9 @@
 <script setup>
+import AuthPanel from "@/components/AuthPanel.vue";
+import { ref } from "vue";
 import { RouterView, RouterLink } from "vue-router";
+
+const refresh = ref(false);
 </script>
 
 <!--
@@ -9,10 +13,11 @@ import { RouterView, RouterLink } from "vue-router";
  -->
 
 <template>
+  <AuthPanel @logout="refresh = !refresh" />
   <div class="m-2">
     <div id="main" class="card">
       <div class="card-body">
-        <router-view></router-view>
+        <router-view :key="refresh"></router-view>
       </div>
     </div>
   </div>

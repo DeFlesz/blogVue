@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { getArticle, newArticle, editArticle } from "@/api/articles";
 import { isAuthorized, getUserID, isAdmin } from "@/api/auth";
-import { getUserData } from "../api/auth";
 
 const router = useRouter();
 const props = defineProps({
