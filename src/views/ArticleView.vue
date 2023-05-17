@@ -7,6 +7,7 @@ import { deleteArticle } from "@/api/articles";
 import { postComment, getCommentsForArticle } from "../api/comments";
 // import { useUserStore } from "@/stores/user";
 import { reactive, ref } from "vue";
+import { getArticle } from "../api/articles";
 
 const router = useRouter();
 const route = useRoute();
@@ -14,8 +15,9 @@ const authorized = isAuthorized();
 
 const body = ref("");
 const status = ref("public");
+const delButton = ref(null);
 
-// console.log(router.currentRoute.value.params.id);
+// console.log(route.params.id);
 const state = reactive({
   username: "",
   user_id: 0,
@@ -24,18 +26,27 @@ const state = reactive({
   comments: [],
   pages_count: 0,
   current_page: 1,
+  validation_msg: "",
 });
+
+function validate() {
+  if (body.value.length < 3) {
+    state.validation_msg = "At least 3 characters required to post a comment!";
+    return;
+  } else if (body.value.length > 1000) {
+    state.validation_msg =
+      "More than 1000 characters is too much to post a comment!";
+    return;
+  }
+  state.validation_msg = "";
+}
 
 function readComments() {
   if (route.query.page) {
     state.current_page = route.query.page;
   }
   // console.log(state.current_page);
-  getCommentsForArticle(
-    state.user_id,
-    route.params.id,
-    state.current_page
-  ).then((data) => {
+  getCommentsForArticle(route.params.id, state.current_page).then((data) => {
     // console.log(data);
     state.comments = data.comments;
     state.pages_count = data.pages_count;
@@ -45,10 +56,7 @@ function readComments() {
   });
 }
 
-fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
-  .then((response) => {
-    return response.json();
-  })
+getArticle(route.params.id)
   .then((data) => {
     if (data.status == 404) {
       router.push("/");
@@ -64,6 +72,10 @@ fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
     readComments();
   });
 
+function destroyArticle() {
+  delButton.value.disabled = true;
+  deleteArticle(route.params.id).then(() => router.push("/"));
+}
 // readComments();
 </script>
 
@@ -85,24 +97,28 @@ fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
 
       <div v-if="authorized && (isOwner(state.user_id) || isAdmin())">
         <button
-          @click="
-            deleteArticle(router.currentRoute.value.params.id).then(() =>
-              router.push('/')
-            )
-          "
+          ref="delButton"
+          @click="destroyArticle()"
           class="btn btn-danger"
         >
           Destroy Article
         </button>
         <router-link
-          :to="`/edit-article/${router.currentRoute.value.params.id}`"
+          :to="`/edit-article/${route.params.id}`"
           class="btn btn-primary ms-3"
           >Edit Article</router-link
         >
       </div>
 
       <hr />
-      <h4>Leave a comment</h4>
+      <!-- <h4>Leave a comment</h4> -->
+
+      <div class="d-flex align-items-baseline justify-content-between">
+        <h4>Leave a comment</h4>
+        <span :class="body.length > 1000 ? 'indanger' : ''"
+          >{{ body.length }}/1000</span
+        >
+      </div>
       <div v-if="authorized">
         <form>
           <div class="mb-3">
@@ -126,14 +142,18 @@ fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
               <option value="archieved">archieved</option>
             </select>
           </div>
+          <div class="d-flex invalid-feedback mb-3">
+            {{ state.validation_msg }}
+          </div>
           <div class="mb-3">
             <button
               @click.prevent="
                 postComment(
-                  router.currentRoute.value.params.id,
+                  route.params.id,
                   body,
                   status
                 ).then((res) => {
+                  validate();
                   readComments();
                 })
               "
@@ -173,5 +193,9 @@ fetch("http://localhost:8000/articles/" + router.currentRoute.value.params.id)
   display: flex;
   flex-flow: column nowrap;
   max-height: 88vh;
+}
+
+.indanger {
+  color: var(--bs-danger-text-emphasis) !important;
 }
 </style>

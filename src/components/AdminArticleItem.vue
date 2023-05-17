@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { RouterLink } from "vue-router";
 
 import { deleteArticle } from "@/api/articles";
@@ -13,7 +13,10 @@ const props = defineProps({
   //   user: null,
 });
 
-function removeComment() {
+const delButton = ref(null);
+
+function removeArticle() {
+  delButton.value.disabled = true;
   deleteArticle(props.article.id).then(() => {
     emit("destroyed");
   });
@@ -35,7 +38,11 @@ function removeComment() {
         @{{ article.username }} -
         <span class="fw-bold">{{ article.title }}</span>
       </div>
-      <button @click="removeComment()" class="btn btn-danger btn-sm">
+      <button
+        ref="delButton"
+        @click="removeArticle()"
+        class="btn btn-danger btn-sm"
+      >
         Destroy Article
       </button>
       <router-link

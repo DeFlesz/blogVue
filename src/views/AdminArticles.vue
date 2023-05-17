@@ -24,8 +24,8 @@ const state = reactive({
 
 let user_id = -1;
 
-if (router.currentRoute.value.params.user_id) {
-  user_id = router.currentRoute.value.params.user_id;
+if (route.params.user_id) {
+  user_id = route.params.user_id;
   getUserData(user_id).then((data) => {
     state.username = data.displayname;
   });
@@ -70,6 +70,7 @@ readData();
       <template v-if="state.articles.length < 1">No articles...</template>
       <AdminArticleItem
         v-for="article in state.articles"
+        :key="article.id"
         :article="article"
         @destroyed="readData()"
       />

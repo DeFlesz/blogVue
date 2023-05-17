@@ -50,7 +50,11 @@ readData();
     <div class="object-container flex-fill mb-3 pe-2">
       <template v-if="state.articles.length < 1">No articles...</template>
       <ul class="list-group mb-3">
-        <ArticleListItem v-for="article in state.articles" :article="article" />
+        <ArticleListItem
+          v-for="article in state.articles"
+          :key="article.id"
+          :article="article"
+        />
       </ul>
       <!-- <template v-if="state.userArticles.length > 0">
         <hr />

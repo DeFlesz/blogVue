@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getArticle, newArticle, editArticle } from "@/api/articles";
 import { isAuthorized, getUserID, isAdmin } from "@/api/auth";
@@ -27,6 +27,33 @@ let username = "";
 const title = ref("");
 const body = ref("");
 const status = ref("public");
+
+const TITLE_TO_LONG =
+  "Title is too long, it cannot be longer than 128 characters!";
+const TITLE_TO_SHORT =
+  "Title is too short, it cannot be shorter than 3 characters!";
+const BODY_TO_SHORT =
+  "Body is too short, it cannot be shorter than 10 characters!";
+
+const validation = reactive({
+  title: "",
+  body: "",
+});
+
+function validate(params) {
+  validation.title = "";
+  validation.body = "";
+
+  if (title.value.length < 3) {
+    validation.title = TITLE_TO_SHORT;
+  } else if (title.value.length > 128) {
+    validation.title = TITLE_TO_LONG;
+  }
+
+  if (body.value.length < 10) {
+    validation.body = BODY_TO_SHORT;
+  }
+}
 
 if (props.edit) {
   getArticle(props.article_id).then((newData) => {
@@ -56,15 +83,25 @@ function action() {
   }
 
   if (props.new) {
-    newArticle(title.value, body.value, status.value).then(() => {
-      router.push("/");
+    newArticle(title.value, body.value, status.value).then((success) => {
+      if (success) {
+        router.push("/");
+        return;
+      }
+
+      validate();
     });
   }
 
   if (props.edit) {
     editArticle(props.article_id, title.value, body.value, status.value).then(
-      () => {
-        router.push("/");
+      (success) => {
+        if (success) {
+          router.push("/");
+          return;
+        }
+
+        validate();
       }
     );
   }
@@ -105,6 +142,9 @@ function action() {
         class="form-control"
       />
     </div>
+    <div class="d-flex invalid-feedback mb-3">
+      {{ validation.title }}
+    </div>
     <div class="mb-3">
       <label for="article_body" class="form-label">Body</label>
       <textarea
@@ -114,6 +154,9 @@ function action() {
         id="article_body"
         class="form-control"
       />
+    </div>
+    <div class="d-flex invalid-feedback mb-3">
+      {{ validation.body }}
     </div>
     <div class="mb-3">
       <label for="article_status" class="form-label">Status</label>

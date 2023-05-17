@@ -19,6 +19,9 @@ function readData() {
     state.current_page = route.query.page;
   }
   getUsers(state.current_page).then((data) => {
+    if (!data) {
+      return;
+    }
     state.users = [];
     state.pages_count = data.pages_count;
     // console.log(data);
@@ -52,6 +55,7 @@ readData();
       <UserElement
         @changed="readData()"
         v-for="user in state.users"
+        :key="user.id"
         :user="user"
       />
     </ul>
@@ -64,6 +68,10 @@ readData();
         :to="`/admin/${getUserID()}/articles`"
         >My articles</router-link
       >
+
+      <router-link to="/admin/pdf-gen" class="btn btn-info ms-2">
+        PDF generation
+      </router-link>
 
       <PageComponent
         class="ms-auto"

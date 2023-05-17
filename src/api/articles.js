@@ -62,7 +62,12 @@ export async function newArticle(title, body, status) {
           },
         }),
       }
-    )
+    ).then(res => {
+      if (res.status == 200) {
+        return true
+      }
+      return false
+    })
   }
 
   export async function deleteArticle(id) {
@@ -101,5 +106,10 @@ export async function newArticle(title, body, status) {
           },
         }),
       }
-    )
+    ).then(res => {
+      if (res.status == 200) {
+        return true
+      }
+      return false
+    })
   }

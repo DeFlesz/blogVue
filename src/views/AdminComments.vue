@@ -3,7 +3,7 @@ import { reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import Comment from "@/components/Comment.vue";
-import { getCommentsForArticle } from "@/api/comments";
+import { getCommentsForArticleAdmin } from "@/api/comments";
 import { isAdmin, getUserData } from "../api/auth";
 import { getArticle } from "../api/articles";
 import PageComponent from "../components/PageComponent.vue";
@@ -23,8 +23,8 @@ const state = reactive({
   current_page: 1,
 });
 
-const user_id = router.currentRoute.value.params.user_id;
-const article_id = router.currentRoute.value.params.article_id;
+const user_id = route.params.user_id;
+const article_id = route.params.article_id;
 
 getUserData(user_id).then((data) => {
   state.username = data.displayname;
@@ -38,7 +38,7 @@ function readData() {
   if (route.query.page) {
     state.current_page = route.query.page;
   }
-  getCommentsForArticle(user_id, article_id, state.current_page).then(
+  getCommentsForArticleAdmin(user_id, article_id, state.current_page).then(
     (data) => {
       state.comments = data.comments;
       state.pages_count = data.pages_count;
@@ -68,11 +68,13 @@ readData();
 
       <Comment
         v-for="comment in state.comments"
+        :key="comment.id"
         :comment="comment"
         @deleted="readData()"
       />
     </div>
     <PageComponent
+      class="mt-3"
       :pages_count="state.pages_count"
       :current_page="state.current_page"
       @update="readData()"

@@ -27,6 +27,6 @@ const refresh = ref(false);
 #main {
   margin: auto;
   max-width: 48rem;
-  max-height: 100vh;
+  /* max-height: 100vh; */
 }
 </style>

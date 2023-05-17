@@ -1,4 +1,5 @@
 import NotFound from "@/views/NotFound.vue";
+import PDFgen from "@/views/PDFgen.vue";
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
 import Articles from "@/views/Articles.vue";
@@ -22,6 +23,7 @@ const routes = [
     { path: '/login', name: 'login', component: Login},
     { path: '/register', name: 'register', component: Register},
     { path: '/admin', name: "adminPanel", component: AdminPanel},
+    { path: '/admin/pdf-gen', name: "pdfGen", component: PDFgen},
     { path: '/admin/articles', name: "adminArticles", component: AdminArticles},
     { path: '/admin/:user_id/articles', name: "adminUserArticles", component: AdminArticles},
     { path: '/admin/:user_id/articles/:article_id/admin-edit', name: 'adminEdit', component: EditArticle},

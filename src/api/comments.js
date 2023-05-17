@@ -1,6 +1,6 @@
 import { useUserStore } from "@/stores/user";
 
-export async function getCommentsForArticle(user_id, article_id, page = 1) {
+export async function getCommentsForArticleAdmin(user_id, article_id, page = 1) {
   const user = useUserStore();
 
   return fetch(
@@ -12,6 +12,19 @@ export async function getCommentsForArticle(user_id, article_id, page = 1) {
         "X-USER-EMAIL": user.email,
         "X-USER-TOKEN": user.token,
       }
+    }
+  ).then((res) => {
+    return res.json()
+  })
+}
+
+export async function getCommentsForArticle(article_id, page = 1) {
+  const user = useUserStore();
+
+  return fetch(
+    `http://localhost:8000/articles/${article_id}/comments?page=${page}`,
+    {
+      method: "GET"
     }
   ).then((res) => {
     return res.json()

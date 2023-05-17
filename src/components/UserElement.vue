@@ -9,10 +9,12 @@ const props = defineProps({
 const emit = defineEmits(["changed"]);
 
 const role = ref(props.user.role);
+const delButton = ref(null);
 
 // console.log(props.user.role);
 
 function del() {
+  delButton.value.disabled = true;
   deleteUser(props.user.id).then(() => {
     emit("changed");
   });
@@ -30,7 +32,11 @@ function save() {
     <div class="d-inline-flex flex-column justify-content-between">
       <div class="ms-2">@{{ user.displayname }}</div>
       <div class="mt-2">
-        <button @click="del()" class="btn btn-danger ms-2 btn-sm">
+        <button
+          ref="delButton"
+          @click="del()"
+          class="btn btn-danger ms-2 btn-sm"
+        >
           Destroy user
         </button>
         <button
